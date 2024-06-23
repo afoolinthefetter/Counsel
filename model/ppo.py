@@ -383,4 +383,6 @@ if __name__ == '__main__':
             seed=args.seed, steps_per_epoch=args.steps, epochs=args.epochs,
             logger_kwargs=logger_kwargs)
         
+    print("a")
     print(prof.key_averages().table(sort_by="cpu_time_total", row_limit=10))
+    print("z")
