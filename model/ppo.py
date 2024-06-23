@@ -1,6 +1,7 @@
 import numpy as np
 import torch
 from torch.optim import Adam
+from torch.profiler import profile, record_function, ProfilerActivity
 import gym
 import time
 
@@ -376,7 +377,10 @@ if __name__ == '__main__':
     from utils.run_utils import setup_logger_kwargs
     logger_kwargs = setup_logger_kwargs(args.exp_name, args.seed)
 
-    ppo(lambda: gym.make(args.env), actor_critic=core.GCNActorCritic,
-        ac_kwargs=dict(hidden_sizes=[args.hid]*args.l), gamma=args.gamma, 
-        seed=args.seed, steps_per_epoch=args.steps, epochs=args.epochs,
-        logger_kwargs=logger_kwargs)
+    with profile(activities=[ProfilerActivity.CPU], record_shapes=True) as prof: 
+        ppo(lambda: gym.make(args.env), actor_critic=core.GCNActorCritic,
+            ac_kwargs=dict(hidden_sizes=[args.hid]*args.l), gamma=args.gamma, 
+            seed=args.seed, steps_per_epoch=args.steps, epochs=args.epochs,
+            logger_kwargs=logger_kwargs)
+        
+    print(prof.key_averages().table(sort_by="cpu_time_total", row_limit=10))
