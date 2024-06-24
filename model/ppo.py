@@ -332,7 +332,7 @@ def ppo(env_fn, actor_critic=core.GCNActorCritic, ac_kwargs=dict(), seed=0,
                     logger.store(EpRet=ep_ret, EpLen=ep_len)
                 obs, ep_ret, ep_len = env.reset(), 0, 0
                 o, m = obs
-
+                prof.step()
 
         # Save model
         if (epoch % save_freq == 0) or (epoch == epochs-1):
@@ -377,12 +377,21 @@ if __name__ == '__main__':
     from utils.run_utils import setup_logger_kwargs
     logger_kwargs = setup_logger_kwargs(args.exp_name, args.seed)
 
-    with profile(activities=[ProfilerActivity.CPU], record_shapes=True) as prof: 
-        ppo(lambda: gym.make(args.env), actor_critic=core.GCNActorCritic,
-            ac_kwargs=dict(hidden_sizes=[args.hid]*args.l), gamma=args.gamma, 
-            seed=args.seed, steps_per_epoch=args.steps, epochs=args.epochs,
-            logger_kwargs=logger_kwargs)
+    prof = profile(
+                activities=[torch.profiler.ProfilerActivity.CPU, torch.profiler.ProfilerActivity.CUDA],
+                #schedule=torch.profiler.schedule(wait=1, warmup=1, active=1),
+                on_trace_ready=torch.profiler.tensorboard_trace_handler('./profiler/logs'),
+                record_shapes=True,
+                #profile_memory=True,
+                #with_stack=True,
+                #with_flops=True,
+                #with_modules=True
+                )
+     
+    ppo(lambda: gym.make(args.env), actor_critic=core.GCNActorCritic,
+        ac_kwargs=dict(hidden_sizes=[args.hid]*args.l), gamma=args.gamma, 
+        seed=args.seed, steps_per_epoch=args.steps, epochs=args.epochs,
+        logger_kwargs=logger_kwargs)
         
-    print("a")
-    print(prof.key_averages().table(sort_by="cpu_time_total", row_limit=10))
-    print("z")
+    prof.stop()
+    print('Profiler stopped')
