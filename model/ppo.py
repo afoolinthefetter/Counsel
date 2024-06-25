@@ -355,6 +355,7 @@ def ppo(env_fn, actor_critic=core.GCNActorCritic, ac_kwargs=dict(), seed=0,
         logger.log_tabular('StopIter', average_only=True)
         logger.log_tabular('Time Consumed', time.time()-start_time)
         logger.dump_tabular()
+        print("Apple ball")
 
 if __name__ == '__main__':
     import argparse
