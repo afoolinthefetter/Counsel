@@ -1,6 +1,7 @@
 import json
 import os
 import numpy as np
+import torch.autograd.profiler as profiler
 from model.synthetic import set_slo
 from model.rl import RL
 import argparse
@@ -69,4 +70,7 @@ roboconf = RL(slo=slo, budget=budget, overrun_lim=overrun_lim,
               target_kl=hyperparams["target_kl"], 
               save_freq=hyperparams["save_freq"])
 
-roboconf.train(algo)
+with profiler.profile(record_shapes=True, profile_memory=True) as prof:
+    roboconf.train(algo)
+
+print(prof.key_averages().table(sort_by="cuda_time_total"))

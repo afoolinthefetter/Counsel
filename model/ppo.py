@@ -1,7 +1,6 @@
 import numpy as np
 import torch
 from torch.optim import Adam
-from torch.profiler import profile, record_function, ProfilerActivity
 import gym
 import time
 
@@ -91,7 +90,7 @@ class PPOBuffer:
 def ppo(env_fn, actor_critic=core.GCNActorCritic, ac_kwargs=dict(), seed=0, 
         steps_per_epoch=4000, epochs=50, gamma=0.99, clip_ratio=0.2, pi_lr=3e-4,
         vf_lr=1e-3, train_pi_iters=80, train_v_iters=80, lam=0.97, max_ep_len=1000,
-        target_kl=0.01, logger_kwargs=dict(), save_freq=10, prof=None):
+        target_kl=0.01, logger_kwargs=dict(), save_freq=10):
     """
     Proximal Policy Optimization (by clipping), 
 
@@ -332,8 +331,6 @@ def ppo(env_fn, actor_critic=core.GCNActorCritic, ac_kwargs=dict(), seed=0,
                     logger.store(EpRet=ep_ret, EpLen=ep_len)
                 obs, ep_ret, ep_len = env.reset(), 0, 0
                 o, m = obs
-                if prof is not None:
-                    prof.step()
 
         # Save model
         if (epoch % save_freq == 0) or (epoch == epochs-1):
@@ -378,21 +375,7 @@ if __name__ == '__main__':
     from utils.run_utils import setup_logger_kwargs
     logger_kwargs = setup_logger_kwargs(args.exp_name, args.seed)
 
-    prof = profile(
-                activities=[torch.profiler.ProfilerActivity.CPU, torch.profiler.ProfilerActivity.CUDA],
-                #schedule=torch.profiler.schedule(wait=1, warmup=1, active=1),
-                on_trace_ready=torch.profiler.tensorboard_trace_handler('./profiler/logs'),
-                record_shapes=True,
-                #profile_memory=True,
-                #with_stack=True,
-                #with_flops=True,
-                #with_modules=True
-                )
-    prof.start()
     ppo(lambda: gym.make(args.env), actor_critic=core.GCNActorCritic,
         ac_kwargs=dict(hidden_sizes=[args.hid]*args.l), gamma=args.gamma, 
         seed=args.seed, steps_per_epoch=args.steps, epochs=args.epochs,
-        logger_kwargs=logger_kwargs, prof=prof)
-        
-    prof.stop()
-    print('Profiler stopped')
+        logger_kwargs=logger_kwargs)
