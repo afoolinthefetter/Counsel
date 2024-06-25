@@ -87,3 +87,4 @@ class RL(object):
         for env in self.envs:
             env:CloudEnv
             env.terminate()
+            print(f"Terminated {env}")
