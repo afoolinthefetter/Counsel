@@ -388,7 +388,7 @@ if __name__ == '__main__':
                 #with_flops=True,
                 #with_modules=True
                 )
-     
+    prof.start()
     ppo(lambda: gym.make(args.env), actor_critic=core.GCNActorCritic,
         ac_kwargs=dict(hidden_sizes=[args.hid]*args.l), gamma=args.gamma, 
         seed=args.seed, steps_per_epoch=args.steps, epochs=args.epochs,
