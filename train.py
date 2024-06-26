@@ -71,8 +71,7 @@ roboconf = RL(slo=slo, budget=budget, overrun_lim=overrun_lim,
               target_kl=hyperparams["target_kl"], 
               save_freq=hyperparams["save_freq"])
 
-log_dir = './profiler_logs'
-with profiler.profile(record_shapes=True, on_trace_ready=torch.profiler.tensorboard_trace_handler(log_dir), profile_memory=True) as prof:
+with profiler.profile(record_shapes=True, profile_memory=True) as prof:
     roboconf.train(algo)
 
 table_output = prof.key_averages().table(sort_by="cuda_time_total")
