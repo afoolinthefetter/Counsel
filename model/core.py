@@ -89,12 +89,13 @@ class GCN(nn.Module):
                 self.gcn_list.append(SimpleGCN(n_hidden, n_hidden))
         print("num of gcn layer:{}".format(len(self.gcn_list)))
         self.gcn_list = nn.ModuleList(self.gcn_list)
-
     # node_num: n
     # state_node: batch_size*n*feature_num
     # state_adj: batch_size*n*n
     # obs: batch_size*n*(feature_num+n)
     def forward(self, obs):
+        print("obs size:{}".format(obs.size()))
+        print("feature_num:{}, node_num:{}".format(self.feature_num, self.node_num))
         # reconstruct state_node and state_adj from flatten_obs
         if (len(obs.size())==3):
             # batch
