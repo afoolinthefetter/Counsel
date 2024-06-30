@@ -6,7 +6,7 @@ import torch.autograd.profiler as profiler
 from model.synthetic import set_slo
 from model.rl import RL
 import argparse
-
+import time
 
 hp_file = "model/configs/hyperparams.json"
 hp_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), hp_file)
@@ -71,8 +71,13 @@ roboconf = RL(slo=slo, budget=budget, overrun_lim=overrun_lim,
               target_kl=hyperparams["target_kl"], 
               save_freq=hyperparams["save_freq"])
 
+
+start_time = time.time()
+
 with profiler.profile(record_shapes=True, profile_memory=True) as prof:
     roboconf.train(algo)
+
+time_difference = time.time() - start_time
 
 table_output = prof.key_averages().table(sort_by="cuda_time_total")
 
@@ -81,5 +86,5 @@ file_name = "profiler_output.txt"
 
 # Open the file in write mode and save the output
 with open(file_name, 'w') as file:
-    file.write("Tensor Profiler\n")
+    file.write(f"Tensor Profiler. Reinforce Run time: {time_difference}\n")
     file.write(table_output)
