@@ -86,7 +86,6 @@ class GCN(nn.Module):
                 self.gcn_list.append(SimpleGCN(n_hidden, feature_num))
             else:
                 self.gcn_list.append(SimpleGCN(n_hidden, n_hidden))
-        print("num of gcn layer:{}".format(len(self.gcn_list)))
         self.gcn_list = nn.ModuleList(self.gcn_list)
 
     # node_num: n
@@ -95,7 +94,6 @@ class GCN(nn.Module):
     # obs: batch_size*n*(feature_num+n)
     def forward(self, obs):
         # reconstruct state_node and state_adj from flatten_obs
-        print("--> len(obs.size()):", len(obs.size()))
         if (len(obs.size())==3):
             # batch
             adj_adjust, h_0 = torch.split(obs,
@@ -243,10 +241,27 @@ class GCNActorCritic(nn.Module):
         a = pi.sample()
         return a.item()
     
+    def compute_loss_pi(self,data, clip_ratio):
+        obs, act, adv, logp_old = data['obs'], data['act'], data['adv'], data['logp']
+
+        # Policy loss
+        pi, logp = self.pi(obs, act)
+        ratio = torch.exp(logp - logp_old)
+        clip_adv = torch.clamp(ratio, 1-clip_ratio, 1+clip_ratio) * adv
+        loss_pi = -(torch.min(ratio * adv, clip_adv)).mean()
+
+        # Useful extra info
+        approx_kl = (logp_old - logp).mean().item()
+        ent = pi.entropy().mean().item()
+        clipped = ratio.gt(1+clip_ratio) | ratio.lt(1-clip_ratio)
+        clipfrac = torch.as_tensor(clipped, dtype=torch.float32).mean().item()
+        pi_info = dict(kl=approx_kl, ent=ent, cf=clipfrac)
+
+        return loss_pi, pi_info
+    
     def calc_R(self, done:bool):
         states = torch.tensor(self.obs, dtype=torch.float).to(self.device)
         v = self.v(states)
-        print(v)
         returns = []   
         R = v[-1]*(1-int(done)) 
 
@@ -258,8 +273,6 @@ class GCNActorCritic(nn.Module):
         return returns
 
     def calculate_loss(self, done):
-        print("len(obs) = ", len(self.obs))
-        print("len(acts) = ", len(self.acts))
 
         states = torch.tensor(self.obs, dtype=torch.float).to(self.device)
         actions = torch.tensor(self.acts, dtype=torch.float).to(self.device)
