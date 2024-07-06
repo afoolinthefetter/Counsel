@@ -19,10 +19,14 @@ COPY model /counsel/model
 COPY train.py           \
      model_eval.sh      \
      inference.py       \
+     traina3c.py        \
      /counsel/
 
 RUN chown -R nobody:nogroup /counsel
 USER nobody
 
-CMD ["bash", "model_eval.sh", "&&", \
-     "python3", "inference.py"]
+# CMD ["bash", "model_eval.sh", "&&", \
+#      "python3", "inference.py"]
+
+
+CMD ["python3", "train.py", "-n", "std", "-k", "0.05", "-e", "1000"]
