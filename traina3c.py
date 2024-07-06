@@ -76,6 +76,9 @@ class Agent(mp.Process):
                 if t_step % self.steps_in_epoch == 0 or done:
                 # if 0:
                     critic_loss, actor_loss = self.local_actor_critic.calculate_loss(done)
+                    print(type(critic_loss), type(actor_loss))
+                    print(critic_loss, actor_loss)
+                
                     #calling the optimizer to update the weights
                     self.pi_optim.zero_grad()
                     self.vf_optim.zero_grad()

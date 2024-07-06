@@ -95,6 +95,7 @@ class GCN(nn.Module):
     # obs: batch_size*n*(feature_num+n)
     def forward(self, obs):
         # reconstruct state_node and state_adj from flatten_obs
+        print("--> len(obs.size()):", len(obs.size()))
         if (len(obs.size())==3):
             # batch
             adj_adjust, h_0 = torch.split(obs,
@@ -244,13 +245,13 @@ class GCNActorCritic(nn.Module):
     
     def calc_R(self, done:bool):
         states = torch.tensor(self.obs, dtype=torch.float).to(self.device)
-        gcnOut = self.GCN(states)
-        v = self.v(gcnOut).cpu().detach().numpy()
+        v = self.v(states)
+        print(v)
         returns = []   
         R = v[-1]*(1-int(done)) 
 
         for r in self.rews[::-1]:
-            R = r + self.gamma * R
+            R = r + 0.99 * R
             returns.append(R)
         
         returns.reverse()
@@ -264,10 +265,9 @@ class GCNActorCritic(nn.Module):
         actions = torch.tensor(self.acts, dtype=torch.float).to(self.device)
         
         returns = self.calc_R(done)
-
-        gcnOut = self.GCN(states)
-        v = self.v(gcnOut)
-        pi = self.pi._distribution(gcnOut)
+        returns = torch.tensor(returns).to(self.device)
+        v = self.v(states)
+        pi = self.pi._distribution(states)
 
         values = v.squeeze()
         critic_loss = (returns-values)**2
