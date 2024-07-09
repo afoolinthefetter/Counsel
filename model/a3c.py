@@ -260,7 +260,9 @@ class GCNActorCritic(nn.Module):
         return loss_pi, pi_info
     
     def calc_R(self, done:bool):
-        states = torch.tensor(self.obs, dtype=torch.float).to(self.device)
+        obs_array = np.array(self.obs, dtype=np.float32)
+        states = torch.from_numpy(obs_array).to(self.device)
+        # states = torch.tensor(self.obs, dtype=torch.float).to(self.device)
         v = self.v(states)
         returns = []   
         R = v[-1]*(1-int(done)) 
@@ -289,9 +291,15 @@ class GCNActorCritic(nn.Module):
     
     def calculate_loss(self, done, discount_factor=0.99, trace_decay=0.97):
 
-        states = torch.tensor(self.obs, dtype=torch.float).to(self.device)
-        actions = torch.tensor(self.acts, dtype=torch.float).to(self.device)
-        rewards = torch.tensor(self.rews, dtype=torch.float).to(self.device)
+        # states = torch.tensor(self.obs, dtype=torch.float).to(self.device)
+        # actions = torch.tensor(self.acts, dtype=torch.float).to(self.device)
+        # rewards = torch.tensor(self.rews, dtype=torch.float).to(self.device)
+        obs_array = np.array(self.obs, dtype=np.float32)
+        states = torch.from_numpy(obs_array).to(self.device)
+        action_array = np.array(self.acts, dtype=np.float32)
+        actions = torch.from_numpy(action_array).to(self.device)
+        rewards = np.array(self.rews, dtype=np.float32)
+        rewards = torch.from_numpy(rewards).to(self.device)
 
         returns = self.calc_R(done)
         returns = torch.tensor(returns).to(self.device)
