@@ -272,21 +272,70 @@ class GCNActorCritic(nn.Module):
         returns.reverse()
         return returns
 
-    def calculate_loss(self, done):
+    def calculate_advantages(rewards, values, discount_factor, trace_decay):
+        advantages = []
+        advantage = 0
+        next_value = 0
+        
+        for r, v in zip(reversed(rewards), reversed(values)):
+            td_error = r + next_value * discount_factor - v
+            advantage = td_error + advantage * discount_factor * trace_decay
+            next_value = v
+            advantages.insert(0, advantage)
+            
+        advantages = torch.tensor(advantages)
+
+        return advantages
+    
+    def calculate_loss(self, done, discount_factor=0.99, trace_decay=0.97):
 
         states = torch.tensor(self.obs, dtype=torch.float).to(self.device)
         actions = torch.tensor(self.acts, dtype=torch.float).to(self.device)
-        
+        rewards = torch.tensor(self.rews, dtype=torch.float).to(self.device)
+
         returns = self.calc_R(done)
         returns = torch.tensor(returns).to(self.device)
-        v = self.v(states)
+        values = self.v(states).squeeze()
+
+        advantages = []
+        advantage = 0
+        next_value = 0
+
+        for r, v in zip(reversed(rewards), reversed(values)):
+            td_error = r + next_value * discount_factor - v
+            advantage = td_error + advantage * discount_factor * trace_decay
+            next_value = v
+            advantages.insert(0, advantage)
+            
+        advantages = torch.tensor(advantages)
+
+        advantages = advantages.detach()
+        returns = returns.detach()
         pi = self.pi._distribution(states)
+        log_prob_actions = pi.log_prob(actions)
+        
+        actor_loss = - (advantages * log_prob_actions)
 
-        values = v.squeeze()
-        critic_loss = (returns-values)**2
+        value_loss = (returns - values)**2
 
-        actor_loss = -pi.log_prob(actions)*(returns-values)
+        return actor_loss, value_loss
+    
+    # def calculate_loss(self, done):
 
-        return critic_loss, actor_loss
+    #     states = torch.tensor(self.obs, dtype=torch.float).to(self.device)
+    #     actions = torch.tensor(self.acts, dtype=torch.float).to(self.device)
+    #     rewards = torch.tensor(self.rews, dtype=torch.float).to(self.device)
+
+    #     returns = self.calc_R(done)
+    #     returns = torch.tensor(returns).to(self.device)
+    #     v = self.v(states)
+    #     pi = self.pi._distribution(states)
+
+    #     values = v.squeeze()
+    #     critic_loss = (returns-values)**2
+
+    #     actor_loss = -pi.log_prob(actions)*(returns-values)
+
+    #     return critic_loss, actor_loss
 
 
