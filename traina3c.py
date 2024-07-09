@@ -361,7 +361,8 @@ if __name__ == '__main__':
                     gamma=0.99,
                     name=i,
                     global_ep_index=global_ep,
-                    epochs = epochs) for i in range(mp.cpu_count())]
+                    # epochs = epochs) for i in range(mp.cpu_count())]
+                    epochs = epochs) for i in 10]
     
     [w.start() for w in workers]
     [w.join() for w in workers]
