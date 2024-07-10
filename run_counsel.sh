@@ -3,7 +3,7 @@
 #SBATCH --output=counsel.txt
 #SBATCH --error=counsel_error.txt
 #SBATCH -N 1
-#SBATCH -p debug
+#SBATCH -p small
 #SBATCH --cpus-per-task=48
 
 # module load your_module_name_here
@@ -29,13 +29,13 @@ cd /home/aman.gupta/Thesis/Counsel
 
 
 # Under, Over and Expert Provisioning
-python3 traina3c.py -n std -k 0.05 -nw 6 -e 500
-# python3 traina3c.py -n op -k 0.03 -e 1000
-# python3 traina3c.py -n up -k 0.07 -e 1000
+python3 traina3c.py -n std -k 0.05 -nw 6 -e 1000 &&
+python3 traina3c.py -n op -k 0.03 -nw 6 -e 1000 &&
+python3 traina3c.py -n up -k 0.07 -nw 6 -e 1000 &&
 
 # Varying Chain Length and VM Configuration Counts
-python3 traina3c.py -n std-f5-c3 -ncf 5 -ncp 3 -nw 5 -e 1000
-python3 traina3c.py -n std-f10-c3 -ncf 10 -ncp 3 -e 1000
+# python3 traina3c.py -n std-f5-c3 -ncf 5 -ncp 3 -nw 5 -e 1000
+# python3 traina3c.py -n std-f10-c3 -ncf 10 -ncp 3 -e 1000
 # python3 traina3c.py -n std-f25-c3 -ncf 25 -ncp 3 -e 1000
 # python3 traina3c.py -n std-f50-c3 -ncf 50 -ncp 3 -e 1000
 # python3 traina3c.py -n std-f100-c3 -ncf 100 -ncp 3 -e 1000
