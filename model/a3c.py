@@ -289,7 +289,7 @@ class GCNActorCritic(nn.Module):
 
         return advantages
     
-    def calculate_loss(self, done, discount_factor=0.99, trace_decay=0.97):
+    def calculate_loss(self, done, discount_factor=0.95, trace_decay=0.97):
 
         # states = torch.tensor(self.obs, dtype=torch.float).to(self.device)
         # actions = torch.tensor(self.acts, dtype=torch.float).to(self.device)

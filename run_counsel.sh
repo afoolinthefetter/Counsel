@@ -31,7 +31,7 @@ cd /home/aman.gupta/Thesis/Counsel
 # Under, Over and Expert Provisioning
 python3 traina3c.py -n std -k 0.05 -nw 6 -e 1000 &&
 python3 traina3c.py -n op -k 0.03 -nw 6 -e 1000 &&
-python3 traina3c.py -n up -k 0.07 -nw 6 -e 1000 &&
+python3 traina3c.py -n up -k 0.07 -nw 6 -e 100
 
 # Varying Chain Length and VM Configuration Counts
 # python3 traina3c.py -n std-f5-c3 -ncf 5 -ncp 3 -nw 5 -e 1000
