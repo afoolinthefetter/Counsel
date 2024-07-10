@@ -49,7 +49,7 @@ class CloudEnv(gym.Env):
                 self, log_dir:str, steps_per_epoch:int,
                 budget:List[int], slo_latency:float,
                 overrun_lim:float, mode:str='synthetic',
-                nconf:int=5, ncomp:int=3
+                nconf:int=5, ncomp:int=3, port=8000
                 ):
         os.makedirs(log_dir, exist_ok=True)
         self.log_path = os.path.join(log_dir, f'f{nconf}-c{ncomp}.csv')
@@ -70,10 +70,10 @@ class CloudEnv(gym.Env):
         self.act_comp = 0
         self.nconf = nconf
         self.ncomp = ncomp
-
+        self.port = port
         self.chain = Chain()
         self.__preprocess()
-        set_base(self.components)
+        set_base(self.components, port = self.port)
 
         self.action_space = Discrete(self.__num_actions())
         print("act_space size: {}".format(self.action_space.n))
@@ -188,7 +188,8 @@ class CloudEnv(gym.Env):
         # Sync call
         if self.mode == 'synthetic':
             metrics = call_load_server([comp.cpu for comp in self.components],
-                                       [comp.mem for comp in self.components])
+                                       [comp.mem for comp in self.components],
+                                       port=self.port)
         else:
             metrics = None # Not implemented in this version
 

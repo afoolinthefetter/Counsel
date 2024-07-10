@@ -18,7 +18,12 @@ conda activate venv
 
 cd /home/aman.gupta/Thesis/Counsel/load-gen/
 # run fastapi server
-uvicorn loadserver:app --host 0.0.0.0 --port 8000 --log-level info &
+uvicorn loadserver:app --host 0.0.0.0 --port 8000 --log-level warning &
+uvicorn loadserver:app --host 0.0.0.0 --port 8001 --log-level warning &
+uvicorn loadserver:app --host 0.0.0.0 --port 8002 --log-level warning &
+uvicorn loadserver:app --host 0.0.0.0 --port 8003 --log-level warning &
+uvicorn loadserver:app --host 0.0.0.0 --port 8004 --log-level warning &
+uvicorn loadserver:app --host 0.0.0.0 --port 8005 --log-level warning &
 
 cd /home/aman.gupta/Thesis/Counsel
 
@@ -29,7 +34,7 @@ python3 traina3c.py -n op -k 0.03 -e 1000
 python3 traina3c.py -n up -k 0.07 -e 1000
 
 # Varying Chain Length and VM Configuration Counts
-python3 traina3c.py -n std-f5-c3 -ncf 5 -ncp 3 -e 1000
+python3 traina3c.py -n std-f5-c3 -ncf 5 -ncp 3 -nw 6 -e 1000
 # python3 traina3c.py -n std-f10-c3 -ncf 10 -ncp 3 -e 1000
 # python3 traina3c.py -n std-f25-c3 -ncf 25 -ncp 3 -e 1000
 # python3 traina3c.py -n std-f50-c3 -ncf 50 -ncp 3 -e 1000

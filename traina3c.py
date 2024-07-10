@@ -138,10 +138,11 @@ class Agent(mp.Process):
         self.global_ac = global_ac
         
         self.name = 'w%02i' % name
+
         self.episode_idx = global_ep_index
-        
+        port = 8000 + name
         #each worker class will be making their own environment
-        self.env = CloudEnv(cloudConf[0]+"/"+str(name), cloudConf[1], cloudConf[2], cloudConf[3], cloudConf[4], cloudConf[5], cloudConf[6], cloudConf[7])
+        self.env = CloudEnv(cloudConf[0]+"/"+str(name), cloudConf[1], cloudConf[2], cloudConf[3], cloudConf[4], cloudConf[5], cloudConf[6], cloudConf[7], port=port)
 
         self.pi_optim = pi_optim
         self.vf_optim = vf_optim
@@ -284,6 +285,7 @@ if __name__ == '__main__':
     parser.add_argument('-k', "--knob", help="knob", type=float)
     parser.add_argument('-ncp', "--ncomp", help="NFV Components", type=int)
     parser.add_argument('-ncf', "--nconf", help="VM Instances", type=int)
+    parser.add_argument('-nw', "--nworkers", help="Number of workers", type=int)
     args = parser.parse_args()
 
     if args.exp_name:
@@ -298,12 +300,15 @@ if __name__ == '__main__':
         hyperparams["nconf"] = int(args.nconf)
     if args.epochs:
         hyperparams["epochs"] = int(args.epochs)
+    if args.nworkers:
+        hyperparams["nworkers"] = int(args.nworkers)
 
     slo = int(np.exp(np.random.randint(240,840)/100))
     freq = int(1e6 / np.random.randint(int(slo*0.8), int(slo*1.2)))
     knob = hyperparams["knob"] # For over, under and near provisioning
     print(f"SLO: {slo}, Freq: {freq}, Knob: {knob}")
-    set_slo(slo, freq, knob)
+    for i in range(hyperparams["nworkers"]):
+        set_slo(slo, freq, knob, port=8000+i)
 
     budget = hyperparams["budget"]
     overrun_lim = hyperparams["budget_relax"]
@@ -362,7 +367,7 @@ if __name__ == '__main__':
                     name=i,
                     global_ep_index=global_ep,
                     # epochs = epochs) for i in range(mp.cpu_count())]
-                    epochs = epochs) for i in range(2)]
+                    epochs = epochs) for i in range(hyperparams["nworkers"])]
     
     [w.start() for w in workers]
     [w.join() for w in workers]

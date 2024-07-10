@@ -5,33 +5,34 @@ import time
 from .service_chain.component import Component
 
 
-def set_slo(slo:int, freq:int, knob:float)->None:
+def set_slo(slo:int, freq:int, knob:float, port=8000)->None:
     """
     Set the SLO for the load.
     """
-    url = "http://localhost:8000/slo"
+    url = "http://localhost:"+str(port)+"/slo"
     query = {"slo": slo, "freq": freq, "knob": knob}
     requests.put(url, json=query)
 
-def set_base(comps:List[Component])->None:
+def set_base(comps:List[Component], port = 8000)->None:
     """
     Set the base resources for the load.
     """
     cpu = [comp.cpu for comp in comps]
     mem = [comp.mem for comp in comps]
-    url = "http://localhost:8000/base"
+    url = "http://localhost:"+str(port)+"/base"
     query = {"cpu": cpu, "mem": mem}
     requests.put(url, json=query)
 
 
-def call_load_server(cpu:List[int], mem:List[int])->Tuple:
+def call_load_server(cpu:List[int], mem:List[int], port=8000)->Tuple:
     """
     Call the server with the action and get the next metrics.
     """
     while True:
-        url = "http://localhost:8000/load"
+        url = "http://localhost:"+str(port)+"/load"
+        print(url)
         metrics = requests.get(url).json()
-        # time.sleep(0.01)
+        time.sleep(0.01)
 
         arrival_rate = metrics["arrival_rate"]
         lcpu = np.array(metrics["load"][0])
