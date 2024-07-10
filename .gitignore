@@ -136,3 +136,4 @@ docs/*
 inf_logs/*
 infer_logs/*
 logs/*
+a3c/log*
