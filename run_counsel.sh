@@ -24,7 +24,7 @@ cd /home/aman.gupta/Thesis/Counsel
 
 
 # Under, Over and Expert Provisioning
-python3 traina3c.py -n std -k 0.05 -e 1000
+python3 traina3c.py -n std -k 0.05 -e 500
 python3 traina3c.py -n op -k 0.03 -e 1000
 python3 traina3c.py -n up -k 0.07 -e 1000
 
