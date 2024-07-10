@@ -270,7 +270,7 @@ class Agent(mp.Process):
                 self.episode_idx.value += 1
                 # if self.episode_idx.value % 10 == 0:
             
-            print(self.name, 'Ep:', self.episode_idx.value, '| Loss: ', round(critic_loss.item(), 2), round(actor_loss.item(), 2))
+            print(self.name, 'Ep:', self.episode_idx.value, '| Loss: ', round(critic_loss.item(), 2), round(actor_loss.item(), 2), flush=True)
 
 
 if __name__ == '__main__':
