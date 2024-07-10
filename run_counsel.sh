@@ -3,7 +3,7 @@
 #SBATCH --output=counsel.txt
 #SBATCH --error=counsel_error.txt
 #SBATCH -N 1
-#SBATCH -p small
+#SBATCH -p debug
 #SBATCH --cpus-per-task=48
 
 # module load your_module_name_here
@@ -18,7 +18,7 @@ conda activate venv
 
 cd /home/aman.gupta/Thesis/Counsel/load-gen/
 # run fastapi server
-uvicorn loadserver:app --host 0.0.0.0 --port 8000 --log-level warning &
+uvicorn loadserver:app --host 0.0.0.0 --port 8000 --log-level info &
 
 cd /home/aman.gupta/Thesis/Counsel
 
