@@ -222,33 +222,29 @@ class Agent(mp.Process):
             t_step = 1
             score = 0
             self.local_actor_critic.clear_memory()
-            while not done:
+            # while not done:
+            while t_step % self.steps_in_epoch != 0:
                 #passing in the observation to make the action choice
                 action, value, logp = self.local_actor_critic.step(torch.as_tensor(o), torch.as_tensor(m))
                 obs, mask, reward, done, info = self.env.step(action)
-                # print(obs.shape, mask.shape, type(reward), type(done), type(info), action)
                 score += reward
                 self.local_actor_critic.remember(obs, action, reward)
-
+                done = False
+                
                 if t_step % self.steps_in_epoch == 0 or done:
-                # if 0:
                     critic_loss, actor_loss = self.local_actor_critic.calculate_loss(done)
+                    
                     #calling the optimizer to update the weights
                     self.pi_optim.zero_grad()
                     self.vf_optim.zero_grad()
                     
-                    #doing backward on the lossed
+                    #doing backward on the loss
                     critic_loss = critic_loss.mean()
                     actor_loss = actor_loss.mean()
                     
                     critic_loss.backward(retain_graph=True)
                     actor_loss.backward(retain_graph=True)
 
-                    #taking the optimizer/s step (if there are two optimizers)
-                    # self.pi_optim.step()
-
-                    #we set the gradients of the local model to the global model
-                    
                     for local_param, global_param in zip(
                             self.local_actor_critic.parameters(),
                             self.global_ac.parameters()):
@@ -256,8 +252,7 @@ class Agent(mp.Process):
                     
                     self.vf_optim.step()
                     self.pi_optim.step()
-                    #taking the optimizer/s step (if there are two optimizers)
-                    #load the parameters of the global model to the local model
+                    
                     self.local_actor_critic.load_state_dict(
                             self.global_ac.state_dict())
                     self.local_actor_critic.clear_memory()
@@ -267,8 +262,7 @@ class Agent(mp.Process):
             with self.episode_idx.get_lock():
                 self.episode_idx.value += 1
                 # if self.episode_idx.value % 10 == 0:
-            
-            print(self.name, 'Ep:', self.episode_idx.value, '| Loss: ', round(critic_loss.item(), 2), round(actor_loss.item(), 2), flush=True)
+                print(self.name, 'Ep:', self.episode_idx.value, '| Loss: ', round(critic_loss.item(), 2), round(actor_loss.item(), 2), flush=True)
 
 
 if __name__ == '__main__':

@@ -30,7 +30,6 @@ def call_load_server(cpu:List[int], mem:List[int], port=8000)->Tuple:
     """
     while True:
         url = "http://localhost:"+str(port)+"/load"
-        print(url)
         metrics = requests.get(url).json()
         time.sleep(0.01)
 
