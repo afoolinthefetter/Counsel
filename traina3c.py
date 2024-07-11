@@ -216,12 +216,10 @@ class Agent(mp.Process):
     def run(self):
         self.local_actor_critic.load_state_dict(
                             self.global_ac.state_dict())
-        t_step = 1
-        
         while self.episode_idx.value < self.epochs:
             done = False
             o,m = self.env.reset()
-            
+            t_step = 1
             score = 0
             self.local_actor_critic.clear_memory()
             while not done:
