@@ -344,6 +344,6 @@ class GCNActorCritic(nn.Module):
 
         actor_loss = -pi.log_prob(actions)*(returns-values)
 
-        return critic_loss, actor_loss
+        return actor_loss, critic_loss
 
 
