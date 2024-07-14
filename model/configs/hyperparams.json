@@ -16,7 +16,7 @@
     "seed": 0,
     "gamma": 0.95,
     "clip_ratio": 0.2,
-    "pi_lr": 3e-4,
+    "pi_lr": 1e-3,
     "vf_lr": 1e-3,
     "train_pi_iters": 80,
     "train_v_iters": 80,
