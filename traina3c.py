@@ -262,7 +262,7 @@ class Agent(mp.Process):
             with self.episode_idx.get_lock():
                 self.episode_idx.value += 1
                 # if self.episode_idx.value % 10 == 0:
-                print(self.name, 'Ep:', self.episode_idx.value, '| Loss: ', round(critic_loss.item(), 2), round(actor_loss.item(), 2), flush=True)
+                print(self.name, 'Ep:', self.episode_idx.value, '| Loss: ', critic_loss, actor_loss, flush=True)
 
 
 if __name__ == '__main__':
