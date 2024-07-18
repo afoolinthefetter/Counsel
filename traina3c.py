@@ -223,7 +223,7 @@ class Agent(mp.Process):
             score = 0
             self.local_actor_critic.clear_memory()
             # while not done:
-            while t_step % self.steps_in_epoch != 0:
+            while t_step <= self.steps_in_epoch:
                 #passing in the observation to make the action choice
                 action, value, logp = self.local_actor_critic.step(torch.as_tensor(o), torch.as_tensor(m))
                 obs, mask, reward, done, info = self.env.step(action)
