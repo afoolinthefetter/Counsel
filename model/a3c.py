@@ -268,7 +268,7 @@ class GCNActorCritic(nn.Module):
         R = v[-1]*(1-int(done)) 
 
         for r in self.rews[::-1]:
-            R = r + 0.99 * R
+            R = r + 0.95 * R
             returns.append(R)
         
         returns.reverse()
