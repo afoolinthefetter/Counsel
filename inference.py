@@ -5,8 +5,12 @@ import csv
 from model.utils.test_policy import load_policy_and_env, run_policy
 from model.synthetic import set_slo
 
-NCONFS = [5, 10, 25, 50, 100]
-NCOMPS = [3, 5, 10, 20]
+# NCONFS = [5, 10, 25, 50, 100]
+# NCOMPS = [3, 5, 10, 20]
+
+NCONFS = [5]
+NCOMPS = [3]
+
 EPISODE_COUNT = 20
 
 for name, knob in [('op',0.03), ('std',0.05), ('up',0.07)]:
@@ -17,16 +21,17 @@ for name, knob in [('op',0.03), ('std',0.05), ('up',0.07)]:
 
     time_tracker = []
 
-    dir = './data/'
+    dir = 'a3c/'
     out_dir = './infer_logs/'
     out_path = os.path.join(out_dir, 'inference.csv')
-    fix = lambda x: x + '/' + x + '_s0/'
+    fix = lambda x: x + '/'
     
     os.makedirs(out_dir+name, exist_ok=True)
     
     for nconf in NCONFS:
         for ncomp in NCOMPS:
-            model_path = os.path.join(dir, fix(f'std-f{nconf}-c{ncomp}'))
+            # model_path = os.path.join(dir, fix(f'std-f{nconf}-c{ncomp}'))
+            model_path = dir+name+f'-f{nconf}-c{ncomp}'
             params = {
                 'log_dir':out_dir+name,
                 'steps_per_epoch': 1000,

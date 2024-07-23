@@ -15,7 +15,9 @@ def load_policy_and_env(fpath, itr='last', params=None):
     if itr=='last':
         # check filenames for epoch (AKA iteration) numbers, find maximum value
 
-        pytsave_path = osp.join(fpath, 'pyt_save')
+        # pytsave_path = osp.join(fpath, 'pyt_save')
+        pytsave_path = os.path.join(fpath, 'model')
+        print("\n\n\n >>> aaa", pytsave_path, "\n\n\n")
         # Each file in this folder has naming convention 'modelXX.pt', where
         # 'XX' is either an integer or empty string. Empty string case
         # corresponds to len(x)==8, hence that case is excluded.
@@ -47,10 +49,15 @@ def load_policy_and_env(fpath, itr='last', params=None):
 def load_pytorch_policy(fpath, itr):
     """ Load a pytorch policy saved with Spinning Up Logger."""
     
-    fname = osp.join(fpath, 'pyt_save', 'model'+itr+'.pt')
-    print('\n\nLoading from %s.\n\n'%fname)
-
-    model = torch.load(f=fname)
+    fname = osp.join(fpath,'model', 'model'+itr+'.pt')
+    try:
+        print("\n\n\n >>> ", fname, "\n\n\n")
+        model = torch.load(f=fname)
+        print("model loaded successfully",flush=True)
+    except Exception as e:
+        print(e)
+        print("model not loaded successfully",flush=True)
+        return
 
     # make function for producing an action given a single state
     def get_action(x, y):
@@ -70,10 +77,9 @@ def run_policy(env, get_action, output_fname, num_episodes=50):
         "and we can't run the agent in it. :( \n\n Check out the readthedocs " + \
         "page on Experiment Outputs for how to handle this situation."
 
-    logger = EpochLogger(output_fname=output_fname)
+    logger = EpochLogger(output_dir='.',output_fname=output_fname)
     obs, r, d, ep_ret, ep_len, n = env.reset(), 0, False, 0, 0, 0
     o, m = obs
-
     while n < num_episodes:
 
         a = get_action(o, m)
