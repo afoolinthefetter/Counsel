@@ -3,7 +3,7 @@
 #SBATCH --output=counsel.txt
 #SBATCH --error=counsel_error.txt
 #SBATCH -N 1
-#SBATCH -p debug
+#SBATCH -p small
 #SBATCH --cpus-per-task=48
 
 # module load your_module_name_here
