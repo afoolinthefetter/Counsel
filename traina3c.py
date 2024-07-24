@@ -70,16 +70,20 @@ class Agent(mp.Process):
             t_step = 1
             score = 0
             self.local_actor_critic.clear_memory()
+            last_done = 0
             # while not done:
-            while t_step <= self.steps_in_epoch:
+            while t_step <= self.steps_in_epoch:    
                 #passing in the observation to make the action choice
                 action, _, _ = self.local_actor_critic.step(torch.as_tensor(o), torch.as_tensor(m))
                 obs, mask, reward, done, _ = self.env.step(action)
                 score += reward
                 self.local_actor_critic.remember(obs, action, reward)
-                done = False
+                # done = False
                 
                 if t_step % self.steps_in_epoch == 0 or done:
+                    if done and t_step - last_done == 1:
+                        self.local_actor_critic.clear_memory()
+                        continue
                     critic_loss, actor_loss = self.local_actor_critic.calculate_loss(done)
                     
                     #calling the optimizer to update the weights
@@ -103,17 +107,28 @@ class Agent(mp.Process):
                     
                     self.local_actor_critic.load_state_dict(
                             self.global_ac.state_dict())
+                    
                     self.local_actor_critic.clear_memory()
+                
+                if t_step == self.steps_in_epoch or done:
+                    print(f"t_step: {t_step-last_done}, score: {score}, avg_score: {score/(t_step-last_done)}", flush=True)
+                    if done:
+                        last_done = t_step
+                        print("done at last_done: ", last_done, flush=True)
+                        score = 0
+
+
                 t_step += 1
                 o = obs
                 m = mask
+
             with self.episode_idx.get_lock():
                 self.episode_idx.value += 1
                 # if self.episode_idx.value % 10 == 0:
                 #save if it is the last episode or multiples of save_every
                 if self.episode_idx.value % self.save_every == 0 or self.episode_idx.value == self.epochs:
                     torch.save(self.global_ac, 'a3c/'+self.exp_name+'/model/model'+str(self.episode_idx.value)+'.pt')
-                print(self.name, 'Ep:', self.episode_idx.value, '| Loss: ', critic_loss, actor_loss, flush=True)
+                print(self.name, 'Ep:', self.episode_idx.value, '| Loss: ', critic_loss.item(), actor_loss.item(), flush=True)
 
 
 if __name__ == '__main__':
@@ -149,6 +164,11 @@ if __name__ == '__main__':
 
     slo = int(np.exp(np.random.randint(240,840)/100))
     freq = int(1e6 / np.random.randint(int(slo*0.8), int(slo*1.2)))
+
+    # dict of knob values from the name of the experiment
+    knob_dict = {"up":0.03, "std":0.05, "op":0.07}
+    if hyperparams["exp_name"] in knob_dict:
+        hyperparams["knob"] = knob_dict[hyperparams["exp_name"]]
     knob = hyperparams["knob"] # For over, under and near provisioning
     print(f"SLO: {slo}, Freq: {freq}, Knob: {knob}")
     for i in range(hyperparams["nworkers"]):
