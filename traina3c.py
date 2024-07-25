@@ -166,9 +166,6 @@ if __name__ == '__main__':
     freq = int(1e6 / np.random.randint(int(slo*0.8), int(slo*1.2)))
 
     # dict of knob values from the name of the experiment
-    knob_dict = {"up":0.03, "std":0.05, "op":0.07}
-    if hyperparams["exp_name"] in knob_dict:
-        hyperparams["knob"] = knob_dict[hyperparams["exp_name"]]
     knob = hyperparams["knob"] # For over, under and near provisioning
     print(f"SLO: {slo}, Freq: {freq}, Knob: {knob}")
     for i in range(hyperparams["nworkers"]):
