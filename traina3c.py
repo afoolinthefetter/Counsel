@@ -12,7 +12,7 @@ import os
 import sys
 import datetime
 import argparse
-
+import csv
 
 class SharedAdam(torch.optim.Adam):
     def __init__(self, params, lr=1e-3, betas=(0.9, 0.99), eps=1e-8,
@@ -44,6 +44,18 @@ class Agent(mp.Process):
         port = 8000 + name
 
         log_dir = cloudConf[0]+"/"+self.name
+        self.source_log = cloudConf[0] + "/progress_" + self.name + ".csv"
+
+        # Check if the directory exists, and create it if it doesn't
+        directory = os.path.dirname(self.source_log)
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+        
+        if not os.path.isfile(self.source_log):
+            with open(self.source_log, mode='w', newline='') as file:
+                writer = csv.writer(file)
+                # Write header row (customize according to your needs)
+                writer.writerow(["epoch", "avg_reward"])
         #each worker class will be making their own environment
         self.env = CloudEnv(log_dir, cloudConf[1], cloudConf[2], cloudConf[3], cloudConf[4], cloudConf[5], cloudConf[6], cloudConf[7], port=port)
         self.pi_optim = pi_optim
@@ -69,6 +81,7 @@ class Agent(mp.Process):
             o,m = self.env.reset()
             t_step = 1
             score = 0
+            avg_score = []
             self.local_actor_critic.clear_memory()
             last_done = 0
             # while not done:
@@ -111,12 +124,16 @@ class Agent(mp.Process):
                     self.local_actor_critic.clear_memory()
                 
                 if t_step == self.steps_in_epoch or done:
+                    avg_score.append(score/(t_step-last_done))
                     print(f"t_step: {t_step-last_done}, score: {score}, avg_score: {score/(t_step-last_done)}", flush=True)
                     if done:
                         last_done = t_step
-                        print("done at last_done: ", last_done, flush=True)
                         score = 0
-
+                    if t_step == self.steps_in_epoch:
+                        #write the epoch number and avg score to the source file
+                        with open(self.source_log, 'a') as f:
+                            f.write(f"{self.episode_idx.value},{avg_score[-1]}\n")
+                        
 
                 t_step += 1
                 o = obs
